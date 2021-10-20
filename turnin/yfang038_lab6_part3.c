@@ -15,10 +15,12 @@
 #include "simAVRHeader.h"
 #endif
 
-enum States {Start, Init, Increment, Decrement, Reset, On_Increment, On_Decrement} state;
+enum States {Start, Init, press, Increment, Decrement, Reset, On_Increment, On_Decrement} state;
 unsigned char cnt = 0x07;
 volatile unsigned char TimerFlag = 0;
 unsigned long _avr_timer_M = 1;
+unsigned char i = 0;
+unsigned char timeTrigger = 0;
 unsigned long _avr_timer_cntcurr = 0;
 void TimerOn() {
 	TCCR1B = 0x0B;
@@ -51,7 +53,7 @@ void TimerSet (unsigned long M) {
 }
 
 void Tick() {
- unsigned char tmpA = ~PINA & 0x03;
+unsigned char tmpA = ~PINA & 0x03;
  switch(state){
 		case Start:
 			state = Init;
@@ -68,8 +70,17 @@ void Tick() {
 			}
 			break;
 		case Increment:
-			if(tmpA == 0x01){
-				state = Increment;
+			if(tmpA == 0x01) {
+				timeTrigger = 1;
+				//Check to see if it still 0x01
+				//We want to now start keeping track
+				//10 cycles
+				if(i == 10) {
+				state = On_Increment;
+				}
+				else {
+					state = Increment;
+				}
 			}
 			else if (tmpA == 0x00){
 				state = Init;
@@ -83,10 +94,21 @@ void Tick() {
                         break;
 		case On_Increment:
 			state = Increment;
+			i = 0;
+			timeTrigger = 0;
 			break; 
 		case Decrement:
                         if(tmpA == 0x02){
-                                state = Decrement;
+				timeTrigger = 1;
+                                //Check to see if it still 0x02
+                                //We want to now start keeping track
+                                //10 cycles
+                                if(i == 10) {
+                                state = On_Decrement;
+                                }
+                                else {
+                                        state = Decrement;
+                                }
                         }else if (tmpA == 0x00){
                                 state = Init;
                         }else if (tmpA == 0x01){
@@ -98,7 +120,17 @@ void Tick() {
                         break;
 		case On_Decrement:
                         state = Decrement;
-	                break;
+	                i =0;
+			timeTrigger = 0;
+			break;
+		case press:
+			if(tmpA == 0x01){
+				state = On_Increment;
+			}
+			else if(tmpA == 0x02){
+			       state = On_Decrement;
+			}
+	 		break;		
 		case Reset:
 			if(PINA == 0x03){
 				state = Reset;
@@ -124,6 +156,7 @@ void Tick() {
 		case On_Increment:
 			if(cnt < 0x09){
 				cnt++;
+				PORTB = cnt;
 			}
 			break;
 		case Decrement:
@@ -131,6 +164,7 @@ void Tick() {
 		case On_Decrement:
 			if(cnt > 0x00){
 				cnt--;
+				PORTB = cnt;
 			}
 			break;
 		case Reset:
@@ -153,10 +187,15 @@ int main(void) {
     TimerOn();
     /* Insert your solution below */
     while (1) {
+	   
     	Tick();
 	while(!TimerFlag);
 	TimerFlag = 0;
-    	PORTB = cnt;
+	if(timeTrigger == 1) {
+	   i++;
+	}
+	PORTB = cnt;
+
     }
     return 1;
 }
