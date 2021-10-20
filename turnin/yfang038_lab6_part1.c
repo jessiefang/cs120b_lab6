@@ -1,4 +1,4 @@
-/*	Author: lab
+/*	Author: Yunjie Fang
  *  Partner(s) Name: N/A
  *	Lab Section:021
  *	Assignment: Lab #6  Exercise #1

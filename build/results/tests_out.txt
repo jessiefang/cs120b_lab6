@@ -3,6 +3,5 @@ Note: automatically using hardware breakpoints for read-only addresses.
 ======================================================
 Running all tests..."
 
-"start"...test/tests.gdb:43: Error in sourced command file:
-Undefined command: "timeContinue".  Try "help".
+"start"..."next"..."check SetTime"...======================================================
 Remote doesn't know how to detach
