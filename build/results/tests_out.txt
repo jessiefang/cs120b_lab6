@@ -1,0 +1,8 @@
+Breakpoint 1 at 0x3bc: file source/main.c, line 90.
+Note: automatically using hardware breakpoints for read-only addresses.
+======================================================
+Running all tests..."
+
+"start"...test/tests.gdb:43: Error in sourced command file:
+Undefined command: "timeContinue".  Try "help".
+Remote doesn't know how to detach
