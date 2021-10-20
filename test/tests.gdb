@@ -53,22 +53,38 @@ end
 
 
 # Add tests below
-test "start"
+test "Inital LED is PB0"
 SetTime
 expect PORTB 0x01
 checkResult
 
-test "next"
+test "After 1 second PB1"
 SetTime
 expect PORTB 0x02
 checkResult
 
-test "check SetTime"
-SetTime 2
-expect PORTB 0x01
+test "After 2 seconds PB2"
+SetTime
+expect PORTB 0x04
 checkResult
 
+test "Press A0 to Pause"
+setPINA ~0x01
+SetTime
+expect state pause
+expect PORTB 0x04
+checkResult
 
+test "Restart game"
+setPINA ~0x00
+SetTime
+setPINA ~0x01
+SetTime
+setPINA ~0x00
+SetTime
+expect state led2
+expect PORTB 0x02
+checkResult
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed

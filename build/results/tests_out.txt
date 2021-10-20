@@ -1,7 +1,11 @@
-Breakpoint 1 at 0x3bc: file source/main.c, line 90.
+Breakpoint 1 at 0x57a: file source/main.c, line 156.
 Note: automatically using hardware breakpoints for read-only addresses.
 ======================================================
 Running all tests..."
 
-"start"..."next"..."check SetTime"...======================================================
+"Inital LED is PB0"...
+	Expected 0x01 but got PORTB:7"After 1 second PB1"...
+	Expected 0x02 but got PORTB:7"After 2 seconds PB2"...
+	Expected 0x04 but got PORTB:7"Press A0 to Pause"...test/tests.gdb:74: Error in sourced command file:
+No symbol "pause" in current context.
 Remote doesn't know how to detach
