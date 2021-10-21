@@ -15,7 +15,7 @@
 #include "simAVRHeader.h"
 #endif
 
-enum States {Start, Init, press, Increment, Decrement, Reset, On_Increment, On_Decrement} state;
+enum States {Start, Init, Increment, Decrement, Reset, On_Increment, On_Decrement} state;
 unsigned char cnt = 0x07;
 volatile unsigned char TimerFlag = 0;
 unsigned long _avr_timer_M = 1;
@@ -123,14 +123,6 @@ unsigned char tmpA = ~PINA & 0x03;
 	                i =0;
 			timeTrigger = 0;
 			break;
-		case press:
-			if(tmpA == 0x01){
-				state = On_Increment;
-			}
-			else if(tmpA == 0x02){
-			       state = On_Decrement;
-			}
-	 		break;		
 		case Reset:
 			if(PINA == 0x03){
 				state = Reset;
