@@ -7,20 +7,19 @@
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
  *
+ 
  *	Demo link:
  */
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #endif
 
-enum States {Start, Init, press, Increment, Decrement, Reset, On_Increment, On_Decrement} state;
-unsigned char cnt = 0x07;
+enum States {Start, led1, led2, led3, pause, restart, restart1} state;
 volatile unsigned char TimerFlag = 0;
 unsigned long _avr_timer_M = 1;
-unsigned char i = 0;
-unsigned char timeTrigger = 0;
 unsigned long _avr_timer_cntcurr = 0;
 void TimerOn() {
 	TCCR1B = 0x0B;
@@ -51,130 +50,91 @@ void TimerSet (unsigned long M) {
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-
+unsigned char flag = 0;
 void Tick() {
-unsigned char tmpA = ~PINA & 0x03;
- switch(state){
-		case Start:
-			state = Init;
-			break;
-		case Init:
-			if (tmpA == 0x03){
-				state = Reset;
-			}
-			else if(tmpA == 0x01){
-				state = On_Increment;
-			}
-			else if(tmpA == 0x02){
-				state = On_Decrement;
-			}
-			break;
-		case Increment:
-			if(tmpA == 0x01) {
-				timeTrigger = 1;
-				//Check to see if it still 0x01
-				//We want to now start keeping track
-				//10 cycles
-				if(i == 10) {
-				state = On_Increment;
-				}
-				else {
-					state = Increment;
-				}
-			}
-			else if (tmpA == 0x00){
-				state = Init;
-			}else if(PINA == 0x02){
-				state = On_Decrement;
-			}
-			else if (tmpA == 0x03){
-				PORTC = 0x00;
-				state = Reset;
-			}
-                        break;
-		case On_Increment:
-			state = Increment;
-			i = 0;
-			timeTrigger = 0;
-			break; 
-		case Decrement:
-                        if(tmpA == 0x02){
-				timeTrigger = 1;
-                                //Check to see if it still 0x02
-                                //We want to now start keeping track
-                                //10 cycles
-                                if(i == 10) {
-                                state = On_Decrement;
-                                }
-                                else {
-                                        state = Decrement;
-                                }
-                        }else if (tmpA == 0x00){
-                                state = Init;
-                        }else if (tmpA == 0x01){
-				state = On_Increment;
-			}
-			else if (tmpA == 0x03){
-                                state = Reset;
-                        }
-                        break;
-		case On_Decrement:
-                        state = Decrement;
-	                i =0;
-			timeTrigger = 0;
-			break;
-		case press:
-			if(tmpA == 0x01){
-				state = On_Increment;
-			}
-			else if(tmpA == 0x02){
-			       state = On_Decrement;
-			}
-	 		break;		
-		case Reset:
-			if(PINA == 0x03){
-				state = Reset;
-			}else if(PINA == 0x00){
-				state = Init;
-			}
-			else{
-				state = Init;
-			}
-			break;
-		 default:
-			state = Start;
-			break;
-	}
-	switch(state){
-		case Start:
-			PORTB = 0x07;
-			break;
-		case Init:
-			break;
-		case Increment:
-			break;
-		case On_Increment:
-			if(cnt < 0x09){
-				cnt++;
-				PORTB = cnt;
-			}
-			break;
-		case Decrement:
-			break;
-		case On_Decrement:
-			if(cnt > 0x00){
-				cnt--;
-				PORTB = cnt;
-			}
-			break;
-		case Reset:
-			PORTB = 0x00;
-			cnt = 0;
-			break;
-		default:
-			PORTB = 0x07;
-			break;
-	}
+unsigned char press = ~PINA & 0x01;
+
+ switch(state) {
+   case Start:
+   state = led1;   break;
+
+   case led1:
+   flag  = 0;
+   if(press){
+	   state = pause;
+   }
+   else{
+	state = led2;
+   }
+   break;
+
+   case led2:
+   if(press){
+           state = pause;
+   }
+   else if(flag == 0) {
+           state = led3;
+   }
+   else if(flag == 1) {
+	   state = led1;
+   }
+   break;
+
+   case led3:
+   flag = 1;
+   if(press){
+           state = pause;
+   }
+   else{
+           state = led2;
+   }
+
+   break;
+
+   case pause:
+   if(press){
+	   state = pause;
+   }else{
+	   state = restart1;
+   }
+   break;
+
+   case restart1:
+   if(press){
+	   state = Start;
+   }
+
+   break;
+
+   default:
+   	state = Start;
+	break;
+ }
+
+ switch(state) {
+   case Start:  break;
+
+   case led1:
+   PORTB = 0x01;
+   break;
+
+   case led2:
+   PORTB = 0x02;  break;
+
+   case led3:
+   PORTB = 0x04;  break;
+
+   case pause:
+   break;
+
+   case restart:
+   break;
+
+   case restart1:
+   break;
+
+
+ }
 }
 
 
@@ -183,19 +143,13 @@ int main(void) {
     DDRA = 0x00; PORTA = 0xFF;
     DDRB = 0xFF; PORTB = 0x00;
     state = Start;
-    TimerSet(100);
+    TimerSet(300);
     TimerOn();
     /* Insert your solution below */
     while (1) {
-	   
     	Tick();
 	while(!TimerFlag);
 	TimerFlag = 0;
-	if(timeTrigger == 1) {
-	   i++;
-	}
-	PORTB = cnt;
-
     }
     return 1;
 }

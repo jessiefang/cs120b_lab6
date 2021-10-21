@@ -7,8 +7,10 @@
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
  *
+ 
  *	Demo link:
  */
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #ifdef _SIMULATE_
@@ -16,7 +18,6 @@
 #endif
 
 enum States {Start, led1, led2, led3, pause, restart, restart1} state;
-unsig
 volatile unsigned char TimerFlag = 0;
 unsigned long _avr_timer_M = 1;
 unsigned long _avr_timer_cntcurr = 0;
@@ -64,7 +65,7 @@ unsigned char press = ~PINA & 0x01;
    }
    else{
 	state = led2;
-   }   
+   }
    break;
 
    case led2:
@@ -73,7 +74,7 @@ unsigned char press = ~PINA & 0x01;
    }
    else if(flag == 0) {
            state = led3;
-   } 
+   }
    else if(flag == 1) {
 	   state = led1;
    }
@@ -85,7 +86,7 @@ unsigned char press = ~PINA & 0x01;
            state = pause;
    }
    else{
-           state = Start;
+           state = led2;
    }
 
    break;
@@ -100,9 +101,9 @@ unsigned char press = ~PINA & 0x01;
 
    case restart1:
    if(press){
-	   state = pause;
+	   state = Start;
    }
-  
+
    break;
 
    default:
