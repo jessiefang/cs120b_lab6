@@ -16,6 +16,7 @@
 #endif
 
 enum States {Start, led1, led2, led3, pause, restart, restart1} state;
+unsig
 volatile unsigned char TimerFlag = 0;
 unsigned long _avr_timer_M = 1;
 unsigned long _avr_timer_cntcurr = 0;
@@ -48,16 +49,16 @@ void TimerSet (unsigned long M) {
 	_avr_timer_M = M;
 	_avr_timer_cntcurr = _avr_timer_M;
 }
-
+unsigned char flag = 0;
 void Tick() {
 unsigned char press = ~PINA & 0x01;
- unsigned char track = 0x00;
+
  switch(state) {
    case Start:
    state = led1;   break;
 
    case led1:
-   track = 1;
+   flag  = 0;
    if(press){
 	   state = pause;
    }
@@ -67,17 +68,19 @@ unsigned char press = ~PINA & 0x01;
    break;
 
    case led2:
-   track = 2;
    if(press){
            state = pause;
    }
-   else{
+   else if(flag == 0) {
            state = led3;
    } 
+   else if(flag == 1) {
+	   state = led1;
+   }
    break;
 
    case led3:
-   track =3;
+   flag = 1;
    if(press){
            state = pause;
    }
@@ -99,13 +102,7 @@ unsigned char press = ~PINA & 0x01;
    if(press){
 	   state = pause;
    }
-   else if((!press) && track ==1){
-	   state = led2;
-   }else if((!press) && track ==2){
-	   state = led3;
-   }else if ((!press) && track ==3){
-	   state = Start;
-   }
+  
    break;
 
    default:
